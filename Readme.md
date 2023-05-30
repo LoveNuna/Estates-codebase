@@ -53,10 +53,11 @@ The Estates are looking to build out our marketplace, called The Shopping Mall.
     <img src="https://github.com/LoveNuna/Estates-codebase/blob/main/front-end/images/Item_page_3.png"/>
     <img src="https://github.com/LoveNuna/Estates-codebase/blob/main/front-end/images/Item_page_4.png"/>
     <img src="https://github.com/LoveNuna/Estates-codebase/blob/main/front-end/images/Item_page_5.png"/>
+    <img src="https://github.com/LoveNuna/Estates-codebase/blob/main/front-end/images/Item_page_6.png"/>
 </p>
 <p align="center">
     <h3>Item Colouring</h3>
-    <img src="https://github.com/LoveNuna/Estates-codebase/blob/main/front-end/images/Item_colouring_1png.png"/>
+    <img src="https://github.com/LoveNuna/Estates-codebase/blob/main/front-end/images/Item_colouring_1.png"/>
     <img src="https://github.com/LoveNuna/Estates-codebase/blob/main/front-end/images/Item_colouring_2.png"/>
     <img src="https://github.com/LoveNuna/Estates-codebase/blob/main/front-end/images/Item_colouring_3.png"/>
 </p>
