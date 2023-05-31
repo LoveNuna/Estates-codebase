@@ -1,14 +1,20 @@
 <script setup>
-import { computed, toRefs, useSlots } from 'vue'
+import { computed, toRefs, useSlots } from "vue";
 
-const props = defineProps(['total', 'partial', 'secondary'])
-const { total, partial } = toRefs(props)
+const props = defineProps(["total", "partial", "secondary"]);
+const { total, partial } = toRefs(props);
 
-const slots = useSlots()
+const slots = useSlots();
 
-const progress_partial = computed(() => total.value ? partial.value * 100 / total.value : 0)
-const progress_leftover = computed(() => total.value ? leftover.value * 100 / total.value : 0)
-const leftover = computed(() => total.value ? total.value - progress_partial.value : 0)
+const progress_partial = computed(() =>
+  total.value ? (partial.value * 100) / total.value : 0
+);
+const progress_leftover = computed(() =>
+  total.value ? (leftover.value * 100) / total.value : 0
+);
+const leftover = computed(() =>
+  total.value ? total.value - progress_partial.value : 0
+);
 </script>
 
 <template>

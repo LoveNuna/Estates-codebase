@@ -284,9 +284,9 @@ onAppEvent(({ type }) => {
 
 <template>
   <div class="self-center w-full py-12">
-    <div class="container mx-auto">
-      <div class="flex items-center gap-16 justify-center flex-col lg:flex-row">
-        <div class="flex-1 max-w-[380px] md:max-w-[480px]">
+    <div class="container max-w-screen-2xl">
+      <div class="flex items-center gap-16">
+        <div class="flex-1 max-w-[480px]">
           <img src="@/assets/estate.png" class="w-full h-auto" loading="lazy" />
         </div>
         <div class="grid flex-1 max-w-screen-sm gap-12">
@@ -416,9 +416,7 @@ onAppEvent(({ type }) => {
             "
           >
             <div class="grid gap-6" v-if="isStateReady && isWhitelistReady">
-              <div
-                class="flex flex-col md:flex-row items-start md:items-center gap-4"
-              >
+              <div class="flex items-center gap-4">
                 <Counter
                   :min="minCount"
                   :max="maxCount"
@@ -458,7 +456,7 @@ onAppEvent(({ type }) => {
                     </div>
                   </template>
                 </Counter>
-                <div class="ml-0 md:ml-auto">
+                <div class="ml-auto">
                   <div class="flex items-center gap-8">
                     <div class="inline-flex items-center gap-2 shrink-0">
                       <div class="checkbox select-none">
@@ -531,7 +529,7 @@ onAppEvent(({ type }) => {
                 </div>
               </div>
 
-              <div class="text-sm text-left md:text-right">
+              <div class="text-sm text-right">
                 <div v-if="state.WLSaleActive">
                   Total Whitelist Mint price:
                   <span class="text-base font-semibold"

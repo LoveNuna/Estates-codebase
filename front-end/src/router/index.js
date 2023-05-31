@@ -1,24 +1,14 @@
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHashHistory } from "vue-router";
 
 import access from "@/middleware/access.js";
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHashHistory(),
   routes: [
     {
       path: "/",
       name: "Home",
       component: () => import("@/views/Home.vue"),
-      meta: {
-        access: {
-          permissions: ["CHAIN_CORRECT"],
-        },
-      },
-    },
-    {
-      path: "/featured",
-      name: "Featured",
-      component: () => import("@/views/Featured.vue"),
       meta: {
         access: {
           permissions: ["CHAIN_CORRECT"],
@@ -41,7 +31,17 @@ const router = createRouter({
       component: () => import("@/views/Items.vue"),
       meta: {
         access: {
-          permissions: ["CHAIN_CORRECT"],
+          permissions: ["USER", "CHAIN_CORRECT"],
+        },
+      },
+    },
+    {
+      path: "/Upload",
+      name: "Upload",
+      component: () => import("@/views/Upload.vue"),
+      meta: {
+        access: {
+          permissions: ["USER"],
         },
       },
     },

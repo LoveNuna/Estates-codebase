@@ -8,7 +8,6 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore"
   },
   "dependencies": {
-    "@chenfengyuan/vue-countdown": "^2.1.0",
     "@headlessui/vue": "^1.6.7",
     "@metamask/detect-provider": "^1.2.0",
     "@types/file-saver": "^2.0.5",
@@ -25,11 +24,9 @@
     "vue-carousel": "^0.18.0",
     "vue-material": "^1.0.0-beta-15",
     "vue-router": "^4.1.2",
-    "vue-tailwind-accordion": "^0.0.13",
     "vue3-carousel": "^0.1.46",
     "vue3-loading-overlay": "^0.0.0",
-    "vue3-material": "^1.0.8",
-    "vue3-rich-accordion": "^0.0.7"
+    "vue3-material": "^1.0.8"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.1.0",

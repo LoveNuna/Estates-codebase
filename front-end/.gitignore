@@ -28,5 +28,5 @@ coverage
 *.sw?
 
 # App
-.vercel
 .env
+.vercel

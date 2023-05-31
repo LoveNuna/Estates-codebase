@@ -1,31 +1,29 @@
 <script setup>
-import { toRefs, ref, reactive, onMounted, nextTick } from "vue";
+import { toRefs, computed, useSlots, ref, reactive } from "vue";
 import { useEventBus } from "@vueuse/core";
+
 import { ethers } from "ethers";
+import useEstate from "@/composables/useEstate";
 import useUser from "@/composables/useUser";
 import { useShoppingApi } from "@/composables";
 import useEquityContract from "@/composables/useEquityContract";
+
+import IconDownload from "@/assets/icons/download.svg";
+import IconEye from "@/assets/icons/eye.svg";
+
 import { notify } from "notiwind";
-import VueCountdown from "@chenfengyuan/vue-countdown";
 import useItemStore from "@/stores/item";
-import BuyIcon from "@/assets/icons/buy.svg";
-import SoldIcon from "@/assets/icons/sold-icon.svg";
-import "../assets/css/itemcard.css";
+
 const { on: onAppEvent } = useEventBus("app");
 const isImageLoaded = ref(false);
 
-const props = defineProps(["id", "item", "isSelectedToken", "refContainer"]);
+const props = defineProps(["id", "item", "isSelectedToken"]);
+const { item, isSelectedToken } = toRefs(props);
 const itemStore = useItemStore();
-const api = useShoppingApi();
-const isLoading = ref(false);
-const { item, isSelectedToken, refContainer } = toRefs(props);
+const onImageLoad = () => (isImageLoaded.value = true);
 const { address } = useUser();
 const { transfer } = useEquityContract(address);
-
-onMounted(async () => {
-  await nextTick();
-});
-const onImageLoad = () => (isImageLoaded.value = true);
+const api = useShoppingApi();
 
 const onBuyItem = async (id) => {
   if (!isSelectedToken.value) {
@@ -36,120 +34,128 @@ const onBuyItem = async (id) => {
     });
     return;
   }
-  isLoading.value = true;
-  const buyPrice = calDiscountRate(item.value.price, item.value.reduction_rate);
-  const amountBn = ethers.utils.parseEther(buyPrice.toString());
+  const amountBn = ethers.utils.parseEther(String(item.value.price));
   try {
-    const result = await transfer(
-      "0xd30E43F1c04eC33625aCDC411CeE87a80afa4Ed2",
-      amountBn
-    );
-    console.log("BUY RESULT", result.hash);
+    await transfer("0xd30E43F1c04eC33625aCDC411CeE87a80afa4Ed2", amountBn);
     notify({
       type: "success",
       title: "Transfer succeed",
-      text: `${buyPrice} EQY is transferred successfully`,
+      text: `${item.value.price} EQY is transferred successfully`,
     });
-    api
-      .post("/buy-item", {
-        itemId: item.value.id,
-        itemOrganizeId: item.value.organizedId,
-        owner: itemStore.selectedToken.owner,
-        nftId: itemStore.selectedToken.id,
-        nftName: itemStore.selectedToken.metadata.name,
-        tx: result.hash,
-      })
-      .then((res) => {
-        if (res.data.status === 0) {
-          notify({
-            type: "error",
-            title: "Exceed amount",
-            text: "This item is sold out",
-          });
-          return;
-        }
-        itemStore.updateAssociatedItems(res.data.itemRecord);
-        itemStore.updateItemSoldAmount(res.data.estateItem);
-      })
-      .catch((err) => {
-        console.log(err);
-      })
-      .finally(() => {
-        isLoading.value = false;
-      });
   } catch (err) {
     notify({
       type: "error",
-      title: "Paying " + buyPrice + "EQY",
+      title: "Paying " + item.value.price + "EQY",
       text: err.reason ?? err.message,
     });
-    console.log(err);
     return;
   }
-};
 
-const isOnSale = (soldAmount, totalAmount, start_date, end_date) => {
-  if (
-    start_date === end_date &&
-    (totalAmount === -1 || totalAmount - soldAmount > 0)
-  ) {
-    return true;
-  }
-  if (!start_date) {
-    if (totalAmount === -1) {
-      return true;
-    } else if (totalAmount - soldAmount > 0) {
-      return true;
-    } else {
-      return false;
-    }
-  } else {
-    if (totalAmount === -1 && diff(end_date) > 0) {
-      return true;
-    } else if (totalAmount - soldAmount > 0 && diff(end_date) > 0) {
-      return true;
-    } else {
-      return false;
-    }
-  }
+  api
+    .post("/buy-item", {
+      itemId: item.value.id,
+      selectedTokenId: itemStore.selectedToken.id,
+      selectedTokenName: itemStore.selectedToken.metadata.name,
+    })
+    .then((res) => {
+      console.log(res.data.itemRecord);
+      itemStore.updateItems(res.data.itemRecord);
+      itemStore.updateAssociatedItems(res.data.itemRecord);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 };
-
-const calDiscountRate = (origin, rate) => {
-  return Number(origin - (origin * rate) / 100).toFixed(2);
-};
-
-const isAuctionItem = (start_date, end_date) => {
-  if (!start_date && !end_date) {
-    return false;
-  }
-
-  const result =
-    new Date(end_date).getTime() - new Date(start_date).getTime() !== 0;
-  return result;
-};
-
-const diff = (end_date) => {
-  const miliDiff = new Date(end_date).getTime() - new Date().getTime();
-  const seconds = Math.floor(miliDiff);
-  if (seconds < 0) return 0;
-  return seconds;
-};
-
-const pad = (num, size) => {
-  num = num.toString();
-  while (num.length < size) num = "0" + num;
-  return num;
-};
+const endpoint = ref(import.meta.env.VITE_CLOUDFRONT_ITEMS);
+const itemImageUrl = reactive({
+  value: endpoint.value + item.value.Key,
+});
 </script>
+<style>
+.image-border {
+  border: 2px ridge #606060b8;
+}
 
+.bar-button {
+  border: 0px solid #bfbfbf;
+  border-width: 2px 0 2px 2px;
+  border-top-left-radius: 13px;
+  display: flex;
+  align-items: center;
+}
+
+.glow-button::after {
+  content: "";
+  top: 0;
+  transform: translateX(100%);
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  z-index: 1;
+  animation: slide 4s infinite 1s;
+  /*
+  CSS Gradient - complete browser support from http://www.colorzilla.com/gradient-editor/
+  */
+  background: -moz-linear-gradient(
+    left,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.8) 50%,
+    rgba(128, 186, 232, 0) 99%,
+    rgba(125, 185, 232, 0) 100%
+  ); /* FF3.6+ */
+  background: -webkit-gradient(
+    linear,
+    left top,
+    right top,
+    color-stop(0%, rgba(255, 255, 255, 0)),
+    color-stop(50%, rgba(255, 255, 255, 0.5)),
+    color-stop(99%, rgba(128, 186, 232, 0)),
+    color-stop(100%, rgba(125, 185, 232, 0))
+  ); /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(
+    left,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.5) 50%,
+    rgba(128, 186, 232, 0) 99%,
+    rgba(125, 185, 232, 0) 100%
+  ); /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(
+    left,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.5) 50%,
+    rgba(128, 186, 232, 0) 99%,
+    rgba(125, 185, 232, 0) 100%
+  ); /* Opera 11.10+ */
+  background: -ms-linear-gradient(
+    left,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.5) 50%,
+    rgba(128, 186, 232, 0) 99%,
+    rgba(125, 185, 232, 0) 100%
+  ); /* IE10+ */
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.5) 50%,
+    rgba(128, 186, 232, 0) 99%,
+    rgba(125, 185, 232, 0) 100%
+  ); /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', endColorstr='#007db9e8',GradientType=1 );
+}
+
+@keyframes slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+</style>
 <template>
-  <div
-    class="relative text-left transition bg-black/10 bg-gradient-to-b from-white/10 to-black/10 aspect-square rounded-[8px]"
+  <component
+    class="relative text-left transition bg-black/10 bg-gradient-to-b from-white/10 to-black/10 aspect-square"
   >
-    <div class="ribbon ribbon-top-left" v-if="item?.reduction_rate">
-      <span>{{ `-${item?.reduction_rate}%` }}</span>
-    </div>
-
     <div
       v-if="!isImageLoaded"
       class="absolute top-0 left-0 z-10 flex items-center justify-center w-full h-full text-left backdrop-blur-sm"
@@ -157,105 +163,43 @@ const pad = (num, size) => {
       <Spinner class="w-8 h-8" />
     </div>
 
-    <div class="absolute bottom-2 right-0 z-[1] overflow-hidden">
+    <div class="absolute top-2 right-0 z-[1] overflow-hidden">
       <div class="flex items-center gap-2">
         <button
-          v-if="
-            isOnSale(
-              item?.sold_amount,
-              item?.quantity,
-              item?.start_date,
-              item?.end_date
-            )
-          "
+          v-if="!item.associated_nft_id"
           type="button"
           title="Buy Now"
           @click="onBuyItem(0)"
-          class="text-[#ddd] hover:text-[#fff] focus:outline-none px-2 text-center bar-button bg-[#cb9f3c]"
+          class="bg-[#12581e] text-[#ddd] hover:text-[#fff] focus:outline-none px-2 text-center bar-button glow-button"
         >
-          <BuyIcon />
+          Buy now
         </button>
-        <button v-else class="bg-[#812727] px-2 bar-button">
-          <SoldIcon />
-        </button>
+        <button v-else class="bg-[#9d0f0f] px-2 bar-button">Sold out</button>
       </div>
     </div>
-    <!-- Take care this part -->
-    <div class="relative h-full w-full">
-      <div
-        class="badge-promo"
-        :class="
-          !isOnSale(
-            item?.sold_amount,
-            item?.quantity,
-            item?.start_date,
-            item?.end_date
-          ) && `before:!bg-[#3e3e3e] after:!bg-[#707070]`
-        "
-      >
-        <div
-          v-if="
-            isOnSale(
-              item?.sold_amount,
-              item?.quantity,
-              item?.start_date,
-              item?.end_date
-            )
-          "
-          class="glow-button"
-        ></div>
-        <span class="badge-promo-content black-emboss">
-          {{
-            `${item?.type?.name} #${pad(item?.id, 3)} - ${item?.color?.name}`
-          }}
-        </span>
-      </div>
-
-      <div class="absolute right-0 top-10 z-10">
-        <span class="text-[14px] rounded-l-xl bg-[#d19528] px-3 py-1">{{
-          `${item?.quantity !== -1 ? item?.quantity : "∞"} / ${
-            item?.sold_amount || "0"
-          }`
-        }}</span>
-      </div>
-      <div class="absolute bottom-0 right-0 w-full">
-        <Transition name="fade" class="relative">
-          <div class="item-inset-shadow">
-            <img
-              :src="item?.image_url"
-              class="aspect-square rounded-tr-[7px] rounded-tl-[7px]"
-              @load="onImageLoad"
-              v-show="isImageLoaded"
-            />
-          </div>
-        </Transition>
-      </div>
-
+    <div class="relative">
+      <Transition name="fade">
+        <img
+          :src="item.image_url"
+          class="aspect-square w-80"
+          @load="onImageLoad"
+          v-show="isImageLoaded"
+        />
+      </Transition>
       <div
         class="absolute bottom-0 bg-gradient-to-b from-[#3e3e3e40] via-[#3e3e3e80] to-[#000000d6] w-full h-full image-border"
       ></div>
 
       <div class="absolute bottom-0 w-full gap-4 px-3 py-3 rounded-b-2xl">
         <div class="text-center w-full">
-          <div>
-            <vue-countdown
-              v-if="isAuctionItem(item?.start_date, item?.end_date)"
-              :time="diff(item?.end_date)"
-              v-slot="{ days, hours, minutes, seconds }"
-            >
-              {{ days }} : {{ hours }} : {{ minutes }} : {{ seconds }}
-            </vue-countdown>
-          </div>
-
           <div
             class="font-semibold leading-tight text-[#d5d5d5] w-full break-words"
-            :style="{ color: `${item?.rarity.color}` }"
-            :title="item?.rarity.name"
           >
             {{ item?.name }}
           </div>
           <div
             class="font-semibold leading-tight text-[#dbc425] flex items-center justify-center mt-1"
+            v-if="!item.associated_nft_id"
           >
             <svg
               class="w-4 h-4"
@@ -271,23 +215,16 @@ const pad = (num, size) => {
                 d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               ></path>
             </svg>
-            &nbsp;
-            <span
-              class="text-[0.8rem]"
-              v-if="item?.reduction_rate === 0 || item.reduction_rate === null"
-              >{{ item?.price }}
-              {{ item?.currency_type === "0" ? "ETH" : "EQY" }}
-            </span>
-            <span class="text-[0.8rem]" v-else>
-              <del class="text-[#aaa]">{{ item?.price }}</del> /
-              <span class="">{{
-                calDiscountRate(item?.price, item?.reduction_rate)
-              }}</span>
-              {{ item?.currency_type === "0" ? "ETH" : "EQY" }}
-            </span>
+            <span class="text-[0.8rem]">&nbsp;{{ item.price }} EQY </span>
+          </div>
+          <div
+            class="font-semibold leading-tight text-[#dbc425] flex items-center justify-center mt-1"
+            v-else
+          >
+            <span class="text-[0.8rem]">{{ item.associated_nft_name }}</span>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </component>
 </template>

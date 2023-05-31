@@ -21,7 +21,7 @@ export default () => {
   const { setUser, resetUser } = userStore;
   const isAuthenticating = ref(false);
 
-  const login = async (route = { name: "Items" }) => {
+  const login = async (route = { name: "Inventory" }) => {
     try {
       isAuthenticating.value = true;
       const [a] = await wallet.provider.request({
@@ -48,7 +48,7 @@ export default () => {
 
   const logout = async () => {
     resetUser();
-    router.replace({ name: "Items" });
+    router.replace({ name: "Home" });
   };
 
   return {

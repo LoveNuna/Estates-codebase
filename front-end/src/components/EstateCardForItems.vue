@@ -101,7 +101,7 @@ onAppEvent(({ type, payload }) => {
       v-if="isTokenReady"
     >
       <div>
-        <div class="text-[14px] leading-tight">
+        <div class="text-[10px] leading-tight">
           Generation {{ token?.generation }}
         </div>
         <div class="font-semibold leading-tight text-[12px]">

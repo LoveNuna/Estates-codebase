@@ -1,3 +1,8 @@
-import { formatEther } from '@ethersproject/units'
+import { formatEther } from "@ethersproject/units";
 
-export default (receipt) => Number(formatEther(receipt.effectiveGasPrice.toNumber() * receipt.gasUsed.toNumber())).toFixed(6)
+export default (receipt) =>
+  Number(
+    formatEther(
+      receipt.effectiveGasPrice.toNumber() * receipt.gasUsed.toNumber()
+    )
+  ).toFixed(6);

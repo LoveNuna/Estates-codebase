@@ -1,5 +1,5 @@
-import { computed } from 'vue'
-import { useFetch } from '@vueuse/core'
+import { computed } from "vue";
+import { useFetch } from "@vueuse/core";
 
 export default (address) => {
   const {
@@ -7,12 +7,14 @@ export default (address) => {
     error: whitelistError,
     isFetching: isWhitelistLoading,
     isFinished: isWhitelistReady,
-    execute: loadWhitelist
-  } = useFetch(import.meta.env.VITE_WHITELIST_URL).get().json()
+    execute: loadWhitelist,
+  } = useFetch(import.meta.env.VITE_WHITELIST_URL)
+    .get()
+    .json();
 
-  const whitelist = computed(() => data.value?.[address.value] ?? null)
+  const whitelist = computed(() => data.value?.[address.value] ?? null);
 
-  const isWhitelisted = computed(() => Boolean(whitelist.value))
+  const isWhitelisted = computed(() => Boolean(whitelist.value));
 
   return {
     whitelist,
@@ -20,6 +22,6 @@ export default (address) => {
     whitelistError,
     isWhitelistLoading,
     isWhitelistReady,
-    loadWhitelist
-  }
-}
+    loadWhitelist,
+  };
+};

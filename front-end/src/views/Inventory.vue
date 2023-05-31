@@ -85,7 +85,7 @@ const deselectAll = () => (selectedTokens.value = []);
 const isTokenSelected = (token) =>
   selectedTokens.value.findIndex((t) => t.id === token.id) != -1;
 const isTokenLocked = (token) =>
-  Boolean(token.staked_at)
+  token.staked_at
     ? token.staked_at + inventory.locktime > new Date().valueOf()
     : false;
 const isTokenLoaded = (token) => token.staked_at >= 0;
@@ -221,6 +221,7 @@ const loadInventory = async () => {
     inventory.loading = true;
     inventory.locktime = await LOCK_IN();
     inventory.tokens = await getTokens();
+
     return Promise.resolve(inventory);
   } catch (error) {
     return Promise.reject(error);

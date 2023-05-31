@@ -7,10 +7,7 @@ import App from "@/AppSuspense.vue";
 import router from "@/router";
 import wallet from "@/plugins/wallet";
 import useUserStore from "@/stores/user";
-import { useAccordion } from "vue3-rich-accordion";
-import "vue3-rich-accordion/accordion-library-styles.css";
 import "@/assets/app.postcss";
-import "flowbite";
 // import detectEthereumProvider from '@metamask/detect-provider'
 
 const pinia = createPinia();
@@ -32,7 +29,7 @@ const onAccountsChanged = async (accounts) => {
 
   if (!address) {
     userStore.resetUser();
-    router.replace({ name: "Items" });
+    router.replace({ name: "Home" });
     return;
   }
 
@@ -83,7 +80,6 @@ persistState()
       .use(pinia)
       .use(wallet, connection)
       .use(router)
-      .use(useAccordion)
       .use(Notifications)
       .mount("#app");
   });
